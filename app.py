@@ -10,7 +10,8 @@ if api_key:
     try:
         genai.configure(api_key=api_key)
         # Mencoba menggunakan gemini-1.5-flash sebagai pilihan utama
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Ganti baris model yang lama dengan ini:
+        model = genai.GenerativeModel('gemini-pro')
         
         if "messages" not in st.session_state:
             st.session_state.messages = []
