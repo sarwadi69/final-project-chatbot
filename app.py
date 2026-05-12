@@ -1,37 +1,39 @@
-
 import streamlit as st
 import google.generativeai as genai
 
-# Konfigurasi Halaman
-st.set_page_config(page_title="Personal Assistant AI", page_icon="🤖")
-st.title("🤖 My Simple Chatbot")
-st.write("Projek Akhir - Data Science Training")
+st.set_page_config(page_title="Chatbot Final Project", page_icon="🤖")
+st.title("🤖 My AI Assistant")
 
-# Input API Key dari Sidebar
 api_key = st.sidebar.text_input("Masukkan Gemini API Key", type="password")
 
 if api_key:
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-pro')
+    try:
+        genai.configure(api_key=api_key)
+        # Mencoba menggunakan gemini-1.5-flash sebagai pilihan utama
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
 
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+        if prompt := st.chat_input("Apa yang ingin kamu tanyakan?"):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
 
-    if prompt := st.chat_input("Ada yang bisa saya bantu?"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        with st.chat_message("assistant"):
-            # Tambahkan karakter unik di sini sesuai instruksi materi
-            full_prompt = f"Berikan jawaban yang edukatif dan ramah: {prompt}"
-            response = model.generate_content(full_prompt)
-            st.markdown(response.text)
-
-        st.session_state.messages.append({"role": "assistant", "content": response.text})
+            with st.chat_message("assistant"):
+                try:
+                    # Menambahkan pesan sistem sederhana
+                    response = model.generate_content(prompt)
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                except Exception as e:
+                    st.error(f"Terjadi kesalahan saat generate konten: {e}")
+                    
+    except Exception as e:
+        st.error(f"Konfigurasi API gagal: {e}")
 else:
-    st.info("Silakan masukkan API Key di sidebar untuk memulai.")
+    st.info("Silakan masukkan API Key di sidebar.")
